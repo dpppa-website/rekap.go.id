@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Rekap DP3A - Premium Edition</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-body: #f0f2f5;
+            --sidebar-color: #1a2a3a;
+            --card-bg: #ffffff;
+            --text-color: #2d3436;
+            --blue-header: #4834d4;
+            --red-header: #eb4d4b;
+            --primary-gradient: linear-gradient(135deg, #4834d4, #686de0);
+            --font-size-base: 14px;
+            --transition-speed: 0.3s;
+        }
+
+        .dark-mode {
+            --bg-body: #0b0e14;
+            --card-bg: #1a1d24;
+            --text-color: #e4e6eb;
+            --sidebar-color: #1a1d24;
+            --blue-header: #686de0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0; background-color: var(--bg-body);
+            color: var(--text-color); font-size: var(--font-size-base);
+            transition: var(--transition-speed); overflow-x: hidden;
+        }
+
+        #authSection, #mainApp {
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            width: 100%;
+        }
+
+        #authSection {
+            background: var(--primary-gradient);
+            height: 100vh; display: flex; justify-content: center; align-items: center;
+            position: absolute; width: 100%; z-index: 10;
+        }
+
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 40px; border-radius: 24px; width: 450px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; color: #333;
+        }
+.input-group { position: relative; margin-bottom: 15px; text-align: left; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 12px; color: #555; }
+        
+        .input-group i.main-icon { position: absolute; left: 14px; top: 38px; color: #a0a0a0; }
+        .input-group input, .input-group select {
+            width: 100%; padding: 12px 12px 12px 42px; border: 2px solid #edeff2;
+            border-radius: 12px; box-sizing: border-box; outline: none; background: #f9f9f9; transition: 0.3s;
+        }
+        
+        .input-group input:focus { border-color: var(--blue-header); background: #fff; }
+
+        .eye-icon { position: absolute; right: 14px; top: 38px; cursor: pointer; color: #a0a0a0; z-index: 5; }
+
+        .btn-auth { 
+            width: 100%; padding: 14px; background: var(--primary-gradient); color: white; 
+            border: none; border-radius: 12px; cursor: pointer; font-weight: 600; 
+            box-shadow: 0 4px 15px rgba(72, 52, 212, 0.3); transition: 0.3s;
+        }
+
+        .btn-auth:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(72, 52, 212, 0.4); }
+
+        #mainApp { display: none; min-height: 100vh; display: flex; transform: translateX(100%); opacity: 0; }
+        
+        .sidebar { width: 280px; background: var(--sidebar-color); color: white; position: fixed; height: 100%; overflow-y: auto; }
+        .sidebar-user { padding: 30px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sidebar-user img { width: 85px; height: 85px; border-radius: 50%; border: 3px solid var(--blue-header); object-fit: cover; margin-bottom: 15px; padding: 3px; }
+        
+        .menu-item { margin: 8px 15px; padding: 12px 20px; cursor: pointer; display: flex; align-items: center; gap: 15px; transition: 0.3s; color: #a4b0be; border-radius: 12px; }
+        .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.1); color: white; }
+        .menu-item.active { background: var(--primary-gradient); box-shadow: 0 4px 12px rgba(72, 52, 212, 0.3); }
+
+        .content { margin-left: 280px; padding: 40px; width: 100%; box-sizing: border-box; }
+        .card { background: var(--card-bg); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 30px; border: 1px solid rgba(0,0,0,0.03); }
+
+        .table-res { overflow-x: auto; border-radius: 12px; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; background: var(--card-bg); }
+        th { background: #f8f9fa; color: #636e72; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; padding: 15px; border-bottom: 2px solid #edf2f7; }
+        td { padding: 15px; border-bottom: 1px solid #edf2f7; font-size: 13px; }
+        
+        .dark-mode th { background: #252932; color: #a4b0be; border-bottom: 2px solid #323741; }
+        .dark-mode td { border-bottom: 1px solid #323741; }
+
+        .trash-icon { color: var(--red-header); cursor: pointer; font-size: 16px; transition: 0.2s; }
+        .edit-icon { color: #f39c12; cursor: pointer; font-size: 16px; margin-right: 15px; transition: 0.2s; }
+        .trash-icon:hover, .edit-icon:hover { transform: scale(1.2); }
+
+        .setting-section { margin-bottom: 30px; padding-bottom: 10px; }
+        .setting-list { list-style: none; padding: 0; }
+        .setting-list li { padding: 12px 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; border-radius: 8px; }
+        .setting-list li:hover { background: rgba(72, 52, 212, 0.05); color: var(--blue-header); transform: translateX(5px); }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body id="appBody">
+    <div id="authSection">
+        <div class="auth-card" id="loginBox">
+            <h2 style="margin-bottom:10px">Selamat Datang</h2>
+            <p style="font-size: 13px; color: #666; margin-bottom: 30px;">Silahkan masuk ke akun Rekap Sub Kegiatan Kualitas keluarga DP3A Anda</p>
+            <div class="input-group">
+                <label>Email Pengguna</label>
+                <i class="fas fa-envelope main-icon"></i>
+                <input type="email" id="lEmail" placeholder="contoh@gmail.com">
+            </div>
+            <div class="input-group">
+                <label>Kata Sandi</label>
+                <i class="fas fa-lock main-icon"></i>
+                <input type="password" id="lPass" placeholder="Masukkan password">
+                <i class="fas fa-eye eye-icon" id="toggleIcon" onclick="togglePass('lPass', 'toggleIcon')"></i>
+            </div>
+            <button class="btn-auth" onclick="handleLogin()">MASUK APLIKASI</button>
+            <p style="font-size:12px; margin-top:20px">
+                <span onclick="showAuth('lupa')" style="color:var(--red-header); cursor:pointer; font-weight:600">Lupa Password?</span>
+            </p>
+<div style="margin-top:25px; padding-top:20px; border-top: 1px solid #eee;">
+                <p style="font-size:13px">Belum punya akses? <b onclick="showAuth('reg')" style="color:var(--blue-header); cursor:pointer">Daftar Akun</b></p>
+            </div>
+        </div>
+
+        <div class="auth-card hidden" id="lupaBox">
+            <h2 style="margin-bottom:15px">Pemulihan Akun</h2>
+            <p style="font-size: 13px; color: #666; margin-bottom: 25px;">Masukkan email Anda untuk melihat kredensial login.</p>
+            <div class="input-group">
+                <label>Email Terdaftar</label>
+                <i class="fas fa-paper-plane main-icon"></i>
+                <input type="email" id="fEmail" placeholder="Masukkan Email Anda">
+            </div>
+            <button class="btn-auth" style="background:var(--red-header)" onclick="prosesLupaPassword()">CEK PASSWORD</button>
+            <p onclick="showAuth('login')" style="cursor:pointer; font-size:13px; color:var(--blue-header); margin-top:20px; font-weight:600">Kembali ke Login</p>
+        </div>
+
+        <div class="auth-card hidden" id="regBox" style="width: 600px;">
+            <h2 style="margin-bottom:10px">Pendaftaran User</h2>
+            <p style="font-size: 13px; color: #666; margin-bottom: 25px;">Lengkapi data diri anda untuk menggunakan sistem rekap.</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="input-group"><label>Nama Lengkap</label><i class="fas fa-user main-icon"></i><input type="text" id="rNama"></div>
+                <div class="input-group"><label>Email</label><i class="fas fa-at main-icon"></i><input type="email" id="rEmail"></div>
+                <div class="input-group"><label>Password</label><i class="fas fa-key main-icon"></i><input type="password" id="rPass"></div>
+                <div class="input-group"><label>Nomor HP</label><i class="fas fa-phone main-icon"></i><input type="text" id="rTelp"></div>
+                <div class="input-group"><label>Alamat</label><i class="fas fa-map-marker-alt main-icon"></i><input type="text" id="rAlamat"></div>
+                <div class="input-group"><label>Tanggal Lahir</label><i class="fas fa-calendar main-icon"></i><input type="date" id="rTglLahir"></div>
+                <div class="input-group">
+                    <label>Jenis Kelamin</label>
+                    <i class="fas fa-venus-mars main-icon"></i>
+                    <select id="rGender">
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                    </select>
+                </div>
+                <div class="input-group"><label>Foto Profil</label><input type="file" id="rFoto" accept="image/*" style="padding-left:10px"></div>
+            </div>
+            <button class="btn-auth" onclick="handleRegister()" style="margin-top:15px">BUAT AKUN SEKARANG</button>
+            <p onclick="showAuth('login')" style="cursor:pointer; font-size:13px; color:var(--blue-header); margin-top:15px; font-weight:600">Sudah punya akun? Login</p>
+        </div>
+    </div>
+<div id="mainApp">
+        <div class="sidebar">
+            <div class="sidebar-user">
+                <img id="sideAvatar" src="https://via.placeholder.com/85" alt="User">
+                <h4 id="sideName" style="margin: 5px 0; font-weight: 700;">User Name</h4>
+                <small id="sideEmail" style="opacity: 0.7; font-size: 11px;"></small>
+            </div>
+            <div class="menu-nav" style="margin-top: 20px;">
+                <div class="menu-item active" onclick="nav('rekap', this)"><i class="fas fa-th-large"></i> Dashboard Rekap</div>
+                <div class="menu-item" onclick="nav('historis', this)"><i class="fas fa-archive"></i> Arsip Terhapus</div>
+                <div class="menu-item" onclick="nav('user', this)"><i class="fas fa-user-circle"></i> Profil Saya</div>
+                <div class="menu-item" onclick="nav('set', this)"><i class="fas fa-sliders-h"></i> Pengaturan</div>
+                <div class="menu-item" onclick="logout()" style="color:#ff7675; margin-top:40px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                    <i class="fas fa-power-off"></i> Keluar Sesi
+                </div>
+            </div>
+        </div>
+<div class="content">
+            <div id="p-rekap" class="page">
+                <div class="card">
+                    <h3 style="margin-top:0; color:var(--blue-header)"><i class="fas fa-edit"></i> Input Rekap Kegiatan</h3>
+                    <p style="font-size: 13px; color: #777; margin-bottom: 25px;">Masukkan rincian kegiatan dan rincian honor narasumber di bawah ini.</p>
+                    
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:20px; margin-bottom:30px">
+                        <div class="input-group"><label>Nama Kegiatan</label><input type="text" id="fKegiatan" placeholder="Contoh: Sosialisasi KB"></div>
+                        <div class="input-group"><label>Tempat Pelaksanaan</label><input type="text" id="fTempat" placeholder="Nama Gedung/Ruangan"></div>
+                        <div class="input-group"><label>Jumlah Peserta</label><input type="number" id="fJumlahPeserta" placeholder="0"></div>
+                        <div class="input-group"><label>Kategori Peserta</label><input type="text" id="fPeserta" placeholder="Contoh: Kader PKK"></div>
+                        <div class="input-group"><label>Tanggal Kegiatan</label><input type="date" id="fTanggal"></div>
+                        <div class="input-group"><label>Narasumber Eselon II</label><input type="text" id="fEselon2" placeholder="Nama Lengkap & Gelar"></div>
+                        <div class="input-group"><label>Honor Eselon II (Rp)</label><input type="number" id="fHonor2" placeholder="Tanpa titik/koma"></div>
+                        <div class="input-group"><label>Narasumber Eselon III</label><input type="text" id="fEselon3" placeholder="Nama Lengkap & Gelar"></div>
+                        <div class="input-group"><label>Honor Eselon III (Rp)</label><input type="number" id="fHonor3" placeholder="Tanpa titik/koma"></div>
+                        <div class="input-group"><label>Keterangan Tambahan</label><input type="text" id="fKeterangan" placeholder="Catatan singkat"></div>
+                    </div>
+                    <button class="btn-auth" id="btnSave" style="width:200px" onclick="saveData()">
+                        <i class="fas fa-save"></i> SIMPAN REKAP
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <h3 style="margin-top:0"><i class="fas fa-list-ul"></i> Daftar Riwayat Rekap</h3>
+                    <div class="table-res">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>No</th><th>Kegiatan</th><th>Tempat</th><th>Jml</th><th>Peserta</th><th>Tanggal</th>
+                                    <th>Eselon II</th><th>Honor II</th><th>Eselon III</th><th>Honor III</th><th>Ket</th><th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tBodyRekap"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+<div id="p-historis" class="page hidden">
+                <div class="card">
+                    <h3 style="color:var(--red-header)"><i class="fas fa-history"></i> Arsip Data Terhapus</h3>
+                    <p style="font-size:12px; color:#777">Data yang dihapus dari dashboard rekap akan tersimpan di sini. Anda dapat menghapusnya secara permanen.</p>
+                    <div class="table-res">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>No</th><th>Nama Kegiatan</th><th>Tempat</th><th>Tanggal</th><th>Keterangan</th><th>Opsi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tBodyHistory"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="p-user" class="page hidden">
+                <div class="card">
+                    <h3 style="color:var(--blue-header); margin-bottom:25px"><i class="fas fa-id-card"></i> Profil Lengkap Pengguna</h3>
+                    <div id="userProfileContent" style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
+                        </div>
+                </div>
+            </div>
+
+            <div id="p-set" class="page hidden">
+                <div class="card">
+                    <h3 style="margin-top:0"><i class="fas fa-cog"></i> Pengaturan Sistem</h3>
+                    
+                    <div class="setting-section">
+                        <h4 style="color:var(--blue-header); border-bottom: 1px solid #eee; padding-bottom:10px">
+                            <i class="fas fa-user-shield"></i> Keamanan & Akun
+                        </h4>
+                        <ul class="setting-list">
+                            <li onclick="nav('user', document.querySelector('.menu-item:nth-child(3)'))">
+                                <i class="fas fa-info-circle"></i> Lihat Informasi Profil Lengkap
+                            </li>
+                            <li onclick="gantiNama()">
+                                <i class="fas fa-fingerprint"></i> Ubah Nama Tampilan (Display Name)
+                            </li>
+                            <li onclick="gantiPassword()">
+                                <i class="fas fa-key"></i> Perbarui Kata Sandi / Password
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="setting-section">
+                        <h4 style="color:var(--blue-header); border-bottom: 1px solid #eee; padding-bottom:10px">
+                            <i class="fas fa-eye"></i> Preferensi Tampilan
+                        </h4>
+                        <div style="padding: 10px 15px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
+                                <span><i class="fas fa-moon"></i> Mode Gelap (Dark Mode)</span>
+                                <input type="checkbox" id="darkToggle" onchange="toggleDark()" style="width:20px; height:20px; cursor:pointer">
+                            </div>
+                            
+                            <div style="margin-bottom:20px">
+                                <div style="display:flex; justify-content:space-between; margin-bottom:8px">
+                                    <span><i class="fas fa-text-height"></i> Ukuran Font Aplikasi</span>
+                                    <span id="fontVal" style="font-weight:bold; color:var(--blue-header)">16px</span>
+                                </div>
+                                <input type="range" min="12" max="22" value="14" style="width:100%; accent-color:var(--blue-header)" oninput="changeFontSize(this.value)">
+                            </div>
+
+                            <div>
+                                <div style="margin-bottom:8px"><span><i class="fas fa-palette"></i> Warna Tema Utama</span></div>
+                                <input type="color" value="#4834d4" style="width:100%; height:40px; border:none; border-radius:8px; cursor:pointer" onchange="changeThemeColor(this.value)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:20px; padding:20px; background: rgba(235, 77, 75, 0.05); border-radius:12px">
+                        <p style="font-size:12px; color:var(--red-header); margin-bottom:15px">Tindakan ini akan mengakhiri sesi aktif Anda saat ini.</p>
+                        <button class="btn-auth" style="background:var(--red-header); width:160px; box-shadow:none" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> KELUAR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div> 
+    </div>
+<script>
+    // --- DATABASE & INISIALISASI ---
+    let db = JSON.parse(localStorage.getItem('dp3a_vfinal_db')) || { 
+        users: {}, active: null, items: [], history: [] 
+    };
+    let editId = null;
+
+    function sync() { localStorage.setItem('dp3a_vfinal_db', JSON.stringify(db)); }
+
+    // --- FITUR PASSWORD (IKON MATA) ---
+    function togglePass(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.className = "fas fa-eye-slash eye-icon";
+        } else {
+            input.type = "password";
+            icon.className = "fas fa-eye eye-icon";
+        }
+    }
+
+    // --- NAVIGASI ---
+    function showAuth(type) {
+        document.getElementById('loginBox').classList.toggle('hidden', type !== 'login');
+        document.getElementById('regBox').classList.toggle('hidden', type !== 'reg');
+        document.getElementById('lupaBox').classList.toggle('hidden', type !== 'lupa');
+    }
+
+    function nav(page, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+        document.getElementById('p-' + page).classList.remove('hidden');
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+        if(el) el.classList.add('active');
+    }
+
+    // --- PERBAIKAN: AUTHENTICATION LOGIC (PROTEKSI EMAIL GANDA) ---
+    function handleRegister() {
+        const email = document.getElementById('rEmail').value.trim();
+        const pass = document.getElementById('rPass').value;
+        const nama = document.getElementById('rNama').value;
+        
+        if(!email || !pass || !nama) return alert("Data wajib diisi!");
+        
+        // CEK APAKAH EMAIL SUDAH TERDAFTAR
+        if (db.users[email]) {
+            alert("Maaf, Email '" + email + "' sudah pernah didaftarkan. Silakan gunakan email lain atau Login.");
+            return;
+        }
+
+        const fotoInput = document.getElementById('rFoto');
+        const simpanData = (fotoData) => {
+            db.users[email] = {
+                nama: nama, email: email, password: pass,
+                telepon: document.getElementById('rTelp').value,
+                alamat: document.getElementById('rAlamat').value,
+                tgl: document.getElementById('rTglLahir').value,
+                gender: document.getElementById('rGender').value,
+                foto: fotoData || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+            };
+            sync(); alert("Registrasi Berhasil!"); showAuth('login');
+        };
+
+        if (fotoInput.files && fotoInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => simpanData(e.target.result);
+            reader.readAsDataURL(fotoInput.files[0]);
+        } else { simpanData(); }
+    }
+
+    function handleLogin() {
+        const email = document.getElementById('lEmail').value;
+        const pass = document.getElementById('lPass').value;
+        if(db.users[email] && db.users[email].password === pass) {
+            db.active = email; 
+            sync();
+            initApp(); 
+            document.getElementById('lEmail').value = '';
+            document.getElementById('lPass').value = '';
+        } else { 
+            alert("Email atau Password salah!"); 
+        }
+    }
+
+    function prosesLupaPassword() {
+        const emailInput = document.getElementById('fEmail').value;
+        if (db.users[emailInput]) {
+            alert("Akun ditemukan!\nPassword Anda: " + db.users[emailInput].password);
+            showAuth('login');
+        } else { alert("Email tidak ditemukan!"); }
+    }
+// --- MANAJEMEN DATA ---
+    function toHistory(id) { 
+        if(confirm("Pindahkan data ini ke arsip/historis?")) {
+            const idx = db.items.findIndex(i => i.id === id); 
+            db.history.push(db.items.splice(idx, 1)[0]); 
+            sync(); renderAll(); 
+        }
+    }
+
+    function delPermanent(id) { 
+        if(confirm("Hapus data ini secara PERMANEN? Tindakan ini tidak bisa dibatalkan.")) { 
+            db.history = db.history.filter(h => h.id !== id); 
+            sync(); renderAll(); 
+        } 
+    }
+
+    function saveData() {
+        const item = {
+            id: editId || Date.now(), 
+            owner: db.active,
+            kegiatan: document.getElementById('fKegiatan').value,
+            tempat: document.getElementById('fTempat').value,
+            jumlahPeserta: document.getElementById('fJumlahPeserta').value,
+            peserta: document.getElementById('fPeserta').value,
+            tanggal: document.getElementById('fTanggal').value,
+            eselon2: document.getElementById('fEselon2').value,
+            honor2: document.getElementById('fHonor2').value,
+            eselon3: document.getElementById('fEselon3').value,
+            honor3: document.getElementById('fHonor3').value,
+            keterangan: document.getElementById('fKeterangan').value
+        };
+
+        if(!item.kegiatan) return alert("Minimal isi Nama Kegiatan!");
+
+        if(editId) {
+            const idx = db.items.findIndex(i => i.id === editId);
+            db.items[idx] = item; editId = null;
+            document.getElementById('btnSave').innerHTML = '<i class="fas fa-save"></i> SIMPAN REKAP';
+        } else { 
+            db.items.push(item); 
+        }
+        sync(); renderAll(); clearForm();
+    }
+
+    function renderAll() {
+        const bR = document.getElementById('tBodyRekap');
+        const bH = document.getElementById('tBodyHistory');
+        const uC = document.getElementById('userProfileContent');
+        if (!bR || !bH) return;
+        bR.innerHTML = ''; bH.innerHTML = '';
+
+        db.items.filter(i => i.owner === db.active).forEach((i, idx) => {
+            bR.innerHTML += `<tr>
+                <td>${idx+1}</td>
+                <td style="font-weight:600">${i.kegiatan}</td>
+                <td>${i.tempat}</td>
+                <td>${i.jumlahPeserta}</td>
+                <td>${i.peserta}</td>
+                <td>${i.tanggal}</td>
+                <td>${i.eselon2}</td>
+                <td>Rp ${Number(i.honor2).toLocaleString()}</td>
+                <td>${i.eselon3}</td>
+                <td>Rp ${Number(i.honor3).toLocaleString()}</td>
+                <td>${i.keterangan}</td>
+                <td>
+                    <i class="fas fa-edit edit-icon" title="Edit" onclick="startEdit(${i.id})"></i>
+                    <i class="fas fa-trash-alt trash-icon" title="Hapus ke Arsip" onclick="toHistory(${i.id})"></i>
+                </td>
+            </tr>`;
+        });
+
+        db.history.filter(h => h.owner === db.active).forEach((h, idx) => {
+            bH.innerHTML += `<tr>
+                <td>${idx+1}</td><td>${h.kegiatan}</td><td>${h.tempat}</td>
+                <td>${h.tanggal}</td><td>${h.keterangan}</td>
+                <td><i class="fas fa-trash-alt trash-icon" onclick="delPermanent(${h.id})" title="Hapus Permanen"></i></td>
+            </tr>`;
+        });
+
+        const u = db.users[db.active];
+        document.getElementById('sideAvatar').src = u.foto;
+        document.getElementById('sideName').innerText = u.nama;
+        document.getElementById('sideEmail').innerText = u.email;
+        
+        uC.innerHTML = `
+            <div style="text-align:center">
+                <img src="${u.foto}" style="width:180px; height:180px; border-radius:24px; object-fit:cover; box-shadow:0 10px 20px rgba(0,0,0,0.1)">
+            </div>
+            <div style="flex:1; min-width:300px">
+                <table style="border:none">
+                    <tr><td style="border:none; color:#777; width:120px">Nama Lengkap</td><td style="border:none; font-weight:600">: ${u.nama}</td></tr>
+                    <tr><td style="border:none; color:#777">Email Akun</td><td style="border:none; font-weight:600">: ${u.email}</td></tr>
+                    <tr><td style="border:none; color:#777">No. WhatsApp</td><td style="border:none; font-weight:600">: ${u.telepon}</td></tr>
+                    <tr><td style="border:none; color:#777">Alamat</td><td style="border:none; font-weight:600">: ${u.alamat}</td></tr>
+                    <tr><td style="border:none; color:#777">Jenis Kelamin</td><td style="border:none; font-weight:600">: ${u.gender}</td></tr>
+                    <tr><td style="border:none; color:#777">Tanggal Lahir</td><td style="border:none; font-weight:600">: ${u.tgl}</td></tr>
+                </table>
+            </div>`;
+    }
+
+    function startEdit(id) {
+        const i = db.items.find(x => x.id === id);
+        editId = id;
+        document.getElementById('fKegiatan').value = i.kegiatan;
+        document.getElementById('fTempat').value = i.tempat;
+        document.getElementById('fJumlahPeserta').value = i.jumlahPeserta;
+        document.getElementById('fPeserta').value = i.peserta;
+        document.getElementById('fTanggal').value = i.tanggal;
+        document.getElementById('fEselon2').value = i.eselon2;
+        document.getElementById('fHonor2').value = i.honor2;
+        document.getElementById('fEselon3').value = i.eselon3;
+        document.getElementById('fHonor3').value = i.honor3;
+        document.getElementById('fKeterangan').value = i.keterangan;
+        document.getElementById('btnSave').innerHTML = '<i class="fas fa-check-circle"></i> PERBARUI DATA';
+        window.scrollTo(0,0);
+    }
+
+    function gantiNama() {
+        let namaBaru = prompt("Masukkan nama baru Anda:", db.users[db.active].nama);
+        if (namaBaru && namaBaru.trim() !== "") {
+            db.users[db.active].nama = namaBaru;
+            sync(); renderAll(); alert("Nama berhasil diperbarui!");
+        }
+    }
+
+    function gantiPassword() {
+        let lama = prompt("Masukkan password lama:");
+        if (lama === db.users[db.active].password) {
+            let baru = prompt("Masukkan password baru (min 4 karakter):");
+            if (baru && baru.length >= 4) {
+                db.users[db.active].password = baru;
+                sync(); alert("Password diperbarui! Silakan login ulang.");
+                logout();
+            } else { alert("Gagal! Password terlalu pendek."); }
+        } else { alert("Password lama salah!"); }
+    }
+
+    function toggleDark() { document.body.classList.toggle('dark-mode'); }
+    function changeFontSize(val) { 
+        document.documentElement.style.setProperty('--font-size-base', val + 'px'); 
+        document.getElementById('fontVal').innerText = val + 'px'; 
+    }
+    function changeThemeColor(val) { document.documentElement.style.setProperty('--blue-header', val); }
+
+    function logout() { 
+        if(confirm("Apakah Anda yakin ingin keluar?")) { 
+            db.active = null; sync(); location.reload(); 
+        } 
+    }
+
+    function clearForm() { 
+        document.querySelectorAll('#p-rekap input').forEach(inp => inp.value = ''); 
+    }
+
+    function initApp() {
+        if(db.active) {
+            document.getElementById('authSection').style.display = 'none';
+            const app = document.getElementById('mainApp');
+            app.style.display = 'flex';
+            setTimeout(() => { 
+                app.style.transform = "translateX(0)"; 
+                app.style.opacity = "1"; 
+            }, 100);
+            renderAll();
+        }
+    }
+
+    window.onload = initApp;
+</script>
+</body>
+</html>
